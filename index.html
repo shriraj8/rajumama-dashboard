@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAJUMAMA EA Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+        }
+        
+        .status-badge {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .status-running {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-stopped {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .stat-value {
+            color: #111827;
+            font-weight: bold;
+        }
+        
+        .stat-value.positive {
+            color: #10b981;
+        }
+        
+        .stat-value.negative {
+            color: #ef4444;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .trades-table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #6b7280;
+        }
+        
+        tr:hover {
+            background: #f9fafb;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .trend-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .trend-bullish {
+            background: #d1fae5;
+            color: #059669;
+        }
+        
+        .trend-bearish {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .trend-neutral {
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+        
+        .last-update {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 RAJUMAMA EA Dashboard</h1>
+            <div class="status-badge" id="ea-status">Loading...</div>
+        </div>
+        
+        <!-- Main Stats Grid -->
+        <div class="grid">
+            <!-- EA Status Card -->
+            <div class="card">
+                <h2>🤖 EA Status</h2>
+                <div class="stat-row">
+                    <span class="stat-label">MAMA</span>
+                    <span class="stat-value" id="mama-value">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">FAMA</span>
+                    <span class="stat-value" id="fama-value">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Trend</span>
+                    <span class="trend-indicator" id="trend">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Position</span>
+                    <span class="stat-value" id="position">-</span>
+                </div>
+                <div class="controls">
+                    <button class="btn btn-success" onclick="startEA()">▶ Start</button>
+                    <button class="btn btn-danger" onclick="stopEA()">⏸ Stop</button>
+                    <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh</button>
+                </div>
+                <div class="last-update" id="last-update">Last update: Never</div>
+            </div>
+            
+            <!-- Account Card -->
+            <div class="card">
+                <h2>💰 Account</h2>
+                <div class="stat-row">
+                    <span class="stat-label">Balance</span>
+                    <span class="stat-value" id="balance">$0.00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Equity</span>
+                    <span class="stat-value" id="equity">$0.00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Profit</span>
+                    <span class="stat-value" id="total-profit">$0.00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Profit Factor</span>
+                    <span class="stat-value" id="profit-factor">0.00</span>
+                </div>
+            </div>
+            
+            <!-- Trading Stats Card -->
+            <div class="card">
+                <h2>📈 Trading Stats</h2>
+                <div class="stat-row">
+                    <span class="stat-label">Total Trades</span>
+                    <span class="stat-value" id="total-trades">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Win Rate</span>
+                    <span class="stat-value" id="win-rate">0%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Winning Trades</span>
+                    <span class="stat-value positive" id="winning-trades">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Losing Trades</span>
+                    <span class="stat-value negative" id="losing-trades">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Card -->
+        <div class="card">
+            <h2>⚙️ Settings</h2>
+            <div class="grid">
+                <div class="input-group">
+                    <label>Stop Loss (%)</label>
+                    <input type="number" id="stop-loss" step="0.1" min="0.1" max="5.0">
+                </div>
+                <div class="input-group">
+                    <label>Take Profit (%)</label>
+                    <input type="number" id="take-profit" step="0.1" min="0.1" max="10.0">
+                </div>
+                <div class="input-group">
+                    <label>Trailing Stop (%)</label>
+                    <input type="number" id="trailing-stop" step="0.1" min="0.1" max="5.0">
+                </div>
+                <div class="input-group">
+                    <label>Lot Size</label>
+                    <input type="number" id="lot-size" step="0.01" min="0.01" max="10.0">
+                </div>
+                <div class="input-group">
+                    <label>Fast Limit</label>
+                    <input type="number" id="fast-limit" step="0.1" min="0.1" max="1.0">
+                </div>
+                <div class="input-group">
+                    <label>Slow Limit</label>
+                    <input type="number" id="slow-limit" step="0.01" min="0.01" max="0.1">
+                </div>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="enable-shorts">
+                <label for="enable-shorts">Enable SHORT Trades</label>
+            </div>
+            <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+        </div>
+        
+        <!-- Recent Trades Table -->
+        <div class="trades-table">
+            <h2 style="margin-bottom: 20px; color: #374151;">📋 Recent Trades</h2>
+            <table id="trades-table">
+                <thead>
+                    <tr>
+                        <th>Ticket</th>
+                        <th>Open Time</th>
+                        <th>Type</th>
+                        <th>Volume</th>
+                        <th>Open Price</th>
+                        <th>Close Price</th>
+                        <th>Profit</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="trades-body">
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #9ca3af;">
+                            No trades yet
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-refresh every 5 seconds
+        setInterval(refreshData, 5000);
+        
+        // Initial load
+        refreshData();
+        loadSettings();
+        loadTrades();
+        loadStats();
+        
+        function refreshData() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    // Update status badge
+                    const statusEl = document.getElementById('ea-status');
+                    if (data.is_running) {
+                        statusEl.textContent = '● RUNNING';
+                        statusEl.className = 'status-badge status-running';
+                    } else {
+                        statusEl.textContent = '● STOPPED';
+                        statusEl.className = 'status-badge status-stopped';
+                    }
+                    
+                    // Update values
+                    document.getElementById('mama-value').textContent = data.mama_value.toFixed(2);
+                    document.getElementById('fama-value').textContent = data.fama_value.toFixed(2);
+                    document.getElementById('position').textContent = data.position_status;
+                    document.getElementById('balance').textContent = '$' + data.balance.toFixed(2);
+                    document.getElementById('equity').textContent = '$' + data.equity.toFixed(2);
+                    
+                    // Update trend
+                    const trendEl = document.getElementById('trend');
+                    trendEl.textContent = data.trend;
+                    trendEl.className = 'trend-indicator';
+                    if (data.trend === 'BULLISH') {
+                        trendEl.classList.add('trend-bullish');
+                    } else if (data.trend === 'BEARISH') {
+                        trendEl.classList.add('trend-bearish');
+                    } else {
+                        trendEl.classList.add('trend-neutral');
+                    }
+                    
+                    // Update last update
+                    const lastUpdate = new Date(data.last_update);
+                    document.getElementById('last-update').textContent = 'Last update: ' + lastUpdate.toLocaleString();
+                })
+                .catch(error => console.error('Error fetching status:', error));
+            
+            loadStats();
+            loadTrades();
+        }
+        
+        function loadSettings() {
+            fetch('/api/settings')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('stop-loss').value = data.stop_loss_percent;
+                    document.getElementById('take-profit').value = data.take_profit_percent;
+                    document.getElementById('trailing-stop').value = data.trailing_stop_percent;
+                    document.getElementById('lot-size').value = data.lot_size;
+                    document.getElementById('fast-limit').value = data.fast_limit;
+                    document.getElementById('slow-limit').value = data.slow_limit;
+                    document.getElementById('enable-shorts').checked = data.enable_short_trades;
+                })
+                .catch(error => console.error('Error loading settings:', error));
+        }
+        
+        function saveSettings() {
+            const settings = {
+                stop_loss_percent: parseFloat(document.getElementById('stop-loss').value),
+                take_profit_percent: parseFloat(document.getElementById('take-profit').value),
+                trailing_stop_percent: parseFloat(document.getElementById('trailing-stop').value),
+                lot_size: parseFloat(document.getElementById('lot-size').value),
+                fast_limit: parseFloat(document.getElementById('fast-limit').value),
+                slow_limit: parseFloat(document.getElementById('slow-limit').value),
+                enable_short_trades: document.getElementById('enable-shorts').checked
+            };
+            
+            fetch('/api/settings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(settings)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Settings saved successfully!');
+            })
+            .catch(error => {
+                console.error('Error saving settings:', error);
+                alert('Error saving settings');
+            });
+        }
+        
+        function loadTrades() {
+            fetch('/api/trades')
+                .then(response => response.json())
+                .then(trades => {
+                    const tbody = document.getElementById('trades-body');
+                    if (trades.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #9ca3af;">No trades yet</td></tr>';
+                        return;
+                    }
+                    
+                    tbody.innerHTML = trades.map(trade => `
+                        <tr>
+                            <td>${trade.ticket || '-'}</td>
+                            <td>${trade.open_time ? new Date(trade.open_time).toLocaleString() : '-'}</td>
+                            <td>${trade.type || '-'}</td>
+                            <td>${trade.volume || '-'}</td>
+                            <td>${trade.open_price ? trade.open_price.toFixed(2) : '-'}</td>
+                            <td>${trade.close_price ? trade.close_price.toFixed(2) : '-'}</td>
+                            <td class="${trade.profit > 0 ? 'stat-value positive' : 'stat-value negative'}">
+                                ${trade.profit ? '$' + trade.profit.toFixed(2) : '-'}
+                            </td>
+                            <td>${trade.status || '-'}</td>
+                        </tr>
+                    `).join('');
+                })
+                .catch(error => console.error('Error loading trades:', error));
+        }
+        
+        function loadStats() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(stats => {
+                    document.getElementById('total-trades').textContent = stats.total_trades;
+                    document.getElementById('win-rate').textContent = stats.win_rate.toFixed(1) + '%';
+                    document.getElementById('winning-trades').textContent = stats.winning_trades;
+                    document.getElementById('losing-trades').textContent = stats.losing_trades;
+                    
+                    const profitEl = document.getElementById('total-profit');
+                    profitEl.textContent = '$' + stats.total_profit.toFixed(2);
+                    profitEl.className = stats.total_profit >= 0 ? 'stat-value positive' : 'stat-value negative';
+                    
+                    document.getElementById('profit-factor').textContent = stats.profit_factor.toFixed(2);
+                })
+                .catch(error => console.error('Error loading stats:', error));
+        }
+        
+        function startEA() {
+            fetch('/api/control/start', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    refreshData();
+                })
+                .catch(error => {
+                    console.error('Error starting EA:', error);
+                    alert('Error starting EA');
+                });
+        }
+        
+        function stopEA() {
+            fetch('/api/control/stop', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    refreshData();
+                })
+                .catch(error => {
+                    console.error('Error stopping EA:', error);
+                    alert('Error stopping EA');
+                });
+        }
+    </script>
+</body>
+</html>
